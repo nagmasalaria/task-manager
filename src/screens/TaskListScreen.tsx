@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: '#aaa',
-    fontSize: 22,
+    fontSize: 18,
   },
   tabTextActive: {
     color: '#fff',
