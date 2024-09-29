@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {act, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,34 +8,60 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  Button,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {fetchTasks} from '../redux/tasksSlice';
 import {RootState} from '../redux/store';
 import {useNavigation} from '@react-navigation/native';
 import moment from 'moment';
+import Loader from '../component/Loader';
 
 const TaskListScreen = () => {
   const dispatch = useDispatch();
   const navigation: any = useNavigation();
-  const {tasks, loading, error} = useSelector(
+  const {tasks, loading, error}: any = useSelector(
     (state: RootState) => state.tasks,
   );
+  const [tasksFilter, setTaskFiltered] = useState([]);
   const [searchText, setSearchText] = useState('');
-
+  const [activeTab, setActiveTab] = useState('All Tasks');
   useEffect(() => {
     dispatch(fetchTasks());
   }, [dispatch]);
 
-  const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchText.toLowerCase()),
-  );
+  useEffect(() => {
+    setTaskFiltered(tasks);
+  }, [tasks]);
+  useEffect(() => {
+    setTaskFiltered(
+      tasks.filter((task: any) =>
+        task.title.toLowerCase().includes(searchText.toLowerCase()),
+      ),
+    );
+  }, [searchText]);
 
-  const getTaskStatus = (d : any) => {
-    var a = moment(new Date(d));
-    var b = moment(new Date());
-    return a.diff(b, 'days') > 1 ? 'Pending' : 'Completed';
-  }
+  useEffect(() => {
+    if (activeTab === 'All Tasks') {
+      setTaskFiltered(tasks);
+    } else {
+      setTaskFiltered(
+        tasks.filter(
+          (task: any) => getTaskStatus(task.deadlineDate) === activeTab,
+        ),
+      );
+    }
+  }, [activeTab]);
+
+  const getTaskStatus = (d: any) => {
+    if (d) {
+      var a = moment(d.seconds * 1000);
+      var b = moment(new Date());
+      console.log(a.format('YYYY-MM-DD'));
+      console.log(a.diff(b, 'days'));
+      return a.diff(b, 'days') > 0 ? 'Pending' : 'Completed';
+    }
+  };
 
   const renderTask = ({item}: any) => (
     <TouchableOpacity
@@ -52,10 +78,15 @@ const TaskListScreen = () => {
       ]}
       onPress={() => navigation.navigate('TaskDetail', {task: item})}>
       <Text style={styles.taskTitle}>{item.title}</Text>
-      <Text style={styles.taskDate}>{getTaskStatus(item.deadline)}</Text>
-      <Text style={styles.taskStatus}>{item.status}</Text>
+      <Text>{item.priority}</Text>
+      <Text style={styles.taskDate}>{item.deadline}</Text>
+      <Text style={styles.taskStatus}>
+        {item.deadlineDate ? getTaskStatus(item.deadlineDate) : ''}
+      </Text>
     </TouchableOpacity>
   );
+
+  useEffect(() => {}, [activeTab]);
 
   return (
     <View style={styles.container}>
@@ -85,24 +116,80 @@ const TaskListScreen = () => {
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
-        <Text style={styles.tabTextActive}>All Tasks</Text>
-        <Text style={styles.tabText}>Pending</Text>
-        <Text style={styles.tabText}>Completed</Text>
+        {['All Tasks', 'Pending', 'Completed'].map((item, index) => (
+          <TouchableOpacity
+            style={{
+              width: '30%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            key={index}
+            onPress={() => setActiveTab(item)}>
+            <Text style={[styles.tabText]}>{item}</Text>
+            <View
+              style={{
+                backgroundColor: activeTab === item ? 'white' : 'transparent',
+                width: '100%',
+                height: 2,
+                marginTop: 6,
+              }}
+            />
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Task List */}
-      <FlatList
-        data={filteredTasks}
-        renderItem={renderTask}
-        keyExtractor={item => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.taskListWrapper}
-        contentContainerStyle={styles.taskListContainer}
-      />
+      {activeTab === 'All Tasks' && tasksFilter.length > 0 && (
+        <View
+          style={{
+            width: '100%',
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            marginBottom: 20,
+          }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#f5f5f5',
+              maxWidth: 120,
+              height: 40,
+              paddingHorizontal: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 10,
+            }}
+            onPress={() => {
+              if (!loading) {
+                dispatch(fetchTasks());
+              }
+            }}>
+            <Text
+              style={{
+                color: 'black',
+                fontSize: 18,
+              }}>
+              Refresh
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {loading ? (
+        <Loader />
+      ) : (
+        <FlatList
+          data={tasksFilter}
+          renderItem={renderTask}
+          keyExtractor={(item: any) => item?.id}
+          numColumns={2}
+          columnWrapperStyle={styles.taskListWrapper}
+          contentContainerStyle={styles.taskListContainer}
+        />
+      )}
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('AddTask')}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate('AddTask')}>
           <Text style={styles.navButtonText}>+</Text>
         </TouchableOpacity>
       </View>

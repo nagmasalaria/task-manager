@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import {addTask} from '../redux/tasksSlice';
@@ -15,9 +16,12 @@ import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
 
 const AddTaskScreen = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [deadline, setDeadline] = useState<Date>(new Date());
+  const [title, setTitle] = useState<any>(null);
+  const [description, setDescription] = useState<any>(null);
+  const [deadlineDate, setDeadlineDate] = useState<Date>(new Date());
+  const [deadline, setDeadline] = useState<string>(
+    moment(new Date(deadlineDate)).format('ddd, DD MMMM YYYY'),
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Low');
   const dispatch = useDispatch();
@@ -25,10 +29,11 @@ const AddTaskScreen = () => {
 
   const handleSubmit = () => {
     if (title && deadline) {
-      const newTask = {
+      const newTask: any = {
         title,
         description,
         deadline,
+        deadlineDate: deadlineDate,
         priority,
         status: 'Pending',
       };
@@ -36,7 +41,8 @@ const AddTaskScreen = () => {
       dispatch(addTask(newTask));
       navigation.goBack();
     } else {
-      console.log('Please fill out required fields');
+      setDescription('');
+      setTitle('');
     }
   };
 
@@ -46,55 +52,70 @@ const AddTaskScreen = () => {
         <Text style={styles.bigHeading}>Add New Task</Text>
       </View>
       <View>
-        <Text style={styles.label}>Title</Text>
-        <TextInput
-          style={styles.inputText}
-          value={title}
-          onChangeText={setTitle}
-        />
-
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={styles.inputText}
-          value={description}
-          onChangeText={setDescription}
-        />
-
-        <Text style={styles.label}>Deadline</Text>
-        <TouchableOpacity  onPress={() => setShowDatePicker(true)}>
-          <Text style={styles.inputText}>{moment(deadline).format('ddd, DD MMMM YYYY')}</Text>
-        </TouchableOpacity>
-        <DatePicker
-          modal
-          open={showDatePicker}
-          date={deadline}
-          onConfirm={date => {
-            setShowDatePicker(false);
-            setDeadline(date);
-          }}
-          onCancel={() => {
-            setShowDatePicker(false);
-          }}
-        />
-
-        <Text style={styles.label}>Priority</Text>
-        <View style={styles.btnGroup}>
-          <Button
-            color={priority === 'Low' ? 'grey' : '#333'}
-            title="Low"
-            onPress={() => setPriority('Low')}
-          />
-          <Button
-            color={priority === 'Medium' ? 'grey' : '#333'}
-            title="Medium"
-            onPress={() => setPriority('Medium')}
-          />
-          <Button
-            color={priority === 'High' ? 'grey' : '#333'}
-            title="High"
-            onPress={() => setPriority('High')}
-          />
-        </View>
+        <KeyboardAvoidingView>
+          <View style={styles.formControl}>
+            <Text style={styles.label}>Title</Text>
+            <TextInput
+              style={styles.inputText}
+              value={title}
+              onChangeText={setTitle}
+            />
+            {title === '' && (
+              <Text style={styles.error}>Title is required.</Text>
+            )}
+          </View>
+          <View style={styles.formControl}>
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              style={styles.inputText}
+              value={description}
+              onChangeText={setDescription}
+            />
+            {description === '' && (
+              <Text style={styles.error}>Description is required.</Text>
+            )}
+          </View>
+          <View style={styles.formControl}>
+            <Text style={styles.label}>Deadline</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+              <Text style={styles.inputText}>{deadline}</Text>
+            </TouchableOpacity>
+            <DatePicker
+              modal
+              mode="date"
+              open={showDatePicker}
+              date={deadlineDate}
+              onConfirm={date => {
+                setShowDatePicker(false);
+                setDeadlineDate(date);
+                setDeadline(moment(new Date(date)).format('ddd, DD MMMM YYYY'));
+              }}
+              onCancel={() => {
+                setShowDatePicker(false);
+              }}
+            />
+          </View>
+          <View style={styles.formControl}>
+            <Text style={styles.label}>Priority</Text>
+            <View style={styles.btnGroup}>
+              <Button
+                color={priority === 'Low' ? 'grey' : '#333'}
+                title="Low"
+                onPress={() => setPriority('Low')}
+              />
+              <Button
+                color={priority === 'Medium' ? 'grey' : '#333'}
+                title="Medium"
+                onPress={() => setPriority('Medium')}
+              />
+              <Button
+                color={priority === 'High' ? 'grey' : '#333'}
+                title="High"
+                onPress={() => setPriority('High')}
+              />
+            </View>
+          </View>
+        </KeyboardAvoidingView>
 
         <Button color={'slategrey'} title="Submit" onPress={handleSubmit} />
       </View>
@@ -108,6 +129,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1B1B1B',
     paddingHorizontal: 20,
     paddingTop: 40,
+  },
+  error: {
+    color: 'red',
+    fontSize: 16,
+    marginTop: 8,
+  },
+  formControl: {
+    marginBottom: 25,
   },
   header: {
     flexDirection: 'row',
@@ -124,14 +153,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   inputText: {
     backgroundColor: '#333',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    marginBottom: 20,
     color: 'white',
   },
   priorityBtn: {

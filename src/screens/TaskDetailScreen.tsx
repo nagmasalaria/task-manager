@@ -19,7 +19,7 @@ const TaskDetailScreen = ({
       <View style={styles.card}>
         <Text style={styles.value}>Title: {task.title}</Text>
         <Text style={styles.value}>Description: {task.description}</Text>
-        <Text style={styles.value}>Deadline: {moment(new Date(task.deadline)).format('ddd, DD MMMM YYYY')}</Text>
+        <Text style={styles.value}>Deadline: {task.deadline}</Text>
         <Text style={styles.value}>Priority: {task.priority}</Text>
         <Text style={styles.value}>Status: {task.status}</Text>
       </View>

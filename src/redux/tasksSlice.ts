@@ -7,6 +7,7 @@ interface Task {
   title: string;
   description: string;
   deadline: string;
+  deadlineDate: Date;
   priority: 'Low' | 'Medium' | 'High';
   status: 'Pending' | 'Completed';
 }
