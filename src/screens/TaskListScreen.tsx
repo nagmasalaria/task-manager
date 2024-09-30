@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Dimensions,
   Button,
+  RefreshControl
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {fetchTasks} from '../redux/tasksSlice';
@@ -26,6 +27,8 @@ const TaskListScreen = () => {
   const [tasksFilter, setTaskFiltered] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState('All Tasks');
+
+
   useEffect(() => {
     dispatch(fetchTasks());
   }, [dispatch]);
@@ -33,6 +36,7 @@ const TaskListScreen = () => {
   useEffect(() => {
     setTaskFiltered(tasks);
   }, [tasks]);
+
   useEffect(() => {
     setTaskFiltered(
       tasks.filter((task: any) =>
@@ -44,6 +48,9 @@ const TaskListScreen = () => {
   useEffect(() => {
     if (activeTab === 'All Tasks') {
       setTaskFiltered(tasks);
+      dispatch(fetchTasks())
+
+      
     } else {
       setTaskFiltered(
         tasks.filter(
@@ -93,16 +100,14 @@ const TaskListScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.greetingText}>Good Morning, Dimitar!</Text>
-        <View
-          style={{
-            height: 60,
-            width: 60,
-            backgroundColor: 'white',
-            borderRadius: 100,
-          }}
-        />
-      </View>
+      <Image
+     style={styles.tinyLogo}
+        source={{
+          uri: 'https://reactnative.dev/img/tiny_logo.png',
+        }}
+      /></View>
 
+ 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -139,13 +144,14 @@ const TaskListScreen = () => {
       </View>
 
       {/* Task List */}
-      {activeTab === 'All Tasks' && tasksFilter.length > 0 && (
+       {activeTab === 'All Tasks' && tasksFilter.length > 0 && (
         <View
           style={{
             width: '100%',
             flexDirection: 'row',
             justifyContent: 'flex-end',
             marginBottom: 20,
+            backgroundColor:"transparent"
           }}>
           <TouchableOpacity
             style={{
@@ -162,16 +168,18 @@ const TaskListScreen = () => {
                 dispatch(fetchTasks());
               }
             }}>
-            <Text
+            {/* <Text
               style={{
                 color: 'black',
                 fontSize: 18,
               }}>
               Refresh
-            </Text>
+            </Text> */}
+            <Image  style={{height:25,width:20,alignSelf:"center" ,tintColor:'black',}} source={require('../images/refresh.png')} />
+
           </TouchableOpacity>
         </View>
-      )}
+      )} 
       {loading ? (
         <Loader />
       ) : (
@@ -180,6 +188,11 @@ const TaskListScreen = () => {
           renderItem={renderTask}
           keyExtractor={(item: any) => item?.id}
           numColumns={2}
+          onScroll={loading}
+          // onRefresh={loading}
+          // refreshControl={
+          //   (<RefreshControl refreshing={loading} onRefresh={fetchTasks} />)
+          // }
           columnWrapperStyle={styles.taskListWrapper}
           contentContainerStyle={styles.taskListContainer}
         />
@@ -239,6 +252,15 @@ const styles = StyleSheet.create({
   tabText: {
     color: '#aaa',
     fontSize: 18,
+  },
+  tinyLogo:{
+    height: 60,
+    width: 60,
+    backgroundColor: 'transparent',
+    borderRadius: 100,
+    justifyContent:"center",
+    alignItems:"center"
+
   },
   tabTextActive: {
     color: '#fff',
