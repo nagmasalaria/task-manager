@@ -8,6 +8,7 @@ import {
   Dimensions,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 import {useDispatch} from 'react-redux';
 import {addTask} from '../redux/tasksSlice';
@@ -25,7 +26,7 @@ const AddTaskScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Low');
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const navigation: any = useNavigation();
 
   const handleSubmit = () => {
     if (title && deadline) {
@@ -35,11 +36,11 @@ const AddTaskScreen = () => {
         deadline,
         deadlineDate: deadlineDate,
         priority,
-        status: 'Pending',
+        // status: 'Pending',
       };
 
       dispatch(addTask(newTask));
-      navigation.goBack();
+      navigation.navigate('TaskList');
     } else {
       setDescription('');
       setTitle('');
@@ -48,8 +49,13 @@ const AddTaskScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View>
-        <Text style={styles.bigHeading}>Add New Task</Text>
+      <View style={{flexDirection:"row",alignItems:"center",backgroundColor:"transparent"}}>
+        <TouchableOpacity onPress={()=>{ navigation.goBack()}} style={{marginRight:40,height:30,width:20,marginBottom:20}}>
+        <Image  style={{height:25,width:20,alignSelf:"center" ,tintColor:'white',}} source={require('../images/back.png')} />
+
+        </TouchableOpacity>
+
+<Text style={styles.bigHeading}>Add New Task</Text>
       </View>
       <View>
         <KeyboardAvoidingView>
@@ -149,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#fff',
     marginBottom: 20,
-  },
+   },
   label: {
     fontSize: 18,
     color: '#fff',

@@ -3,11 +3,7 @@ import {View, Text, StyleSheet, Button} from 'react-native';
 import {RouteProp, useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 
-const TaskDetailScreen = ({
-  route,
-}: {
-  route: RouteProp<{params: {task: any}}, 'params'>;
-}) => {
+const TaskDetailScreen = ({route}: {route: RouteProp<{params: {task: any}}, 'params'>}) => {
   const {task} = route.params;
   const navigation = useNavigation();
 

@@ -18,6 +18,7 @@ const App = () => {
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
         <Stack.Navigator
           initialRouteName="TaskList"
+          
           screenOptions={{
             headerShown: false,
           }}>
